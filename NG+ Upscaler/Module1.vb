@@ -111,7 +111,6 @@ Module Module1
             Return
         End If
 
-
         If Not (Directory.Exists(RemasterDir & "\mod\pngquant")) Then
             My.Computer.Network.DownloadFile("https://pngquant.org/pngquant-windows.zip", RemasterDir & "\pngquant-windows.zip")
             Directory.CreateDirectory(RemasterDir & "\mod\pngquant")
@@ -131,15 +130,15 @@ Module Module1
         End If
         'We have established where NG+ and the remaster are installed. Let's start moving the folders.
         'Now we have all the dirs moved. Junctions time.
-        MakeJunction(SharedDir & "\bg", RemasterDir & "\bg")
-        MakeJunction(SharedDir & "\chara", RemasterDir & "\chara")
-        MakeJunction(SharedDir & "\effect", RemasterDir & "\effect")
-        MakeJunction(SharedDir & "\ency", RemasterDir & "\ency")
-        MakeJunction(SharedDir & "\se", RemasterDir & "\se")
-        MakeJunction(SharedDir & "\system", RemasterDir & "\system")
+        MakeLink(SharedDir & "\bg", RemasterDir & "\bg")
+        MakeLink(SharedDir & "\chara", RemasterDir & "\chara")
+        MakeLink(SharedDir & "\effect", RemasterDir & "\effect")
+        MakeLink(SharedDir & "\ency", RemasterDir & "\ency")
+        MakeLink(SharedDir & "\se", RemasterDir & "\se")
+        MakeLink(SharedDir & "\system", RemasterDir & "\system")
 
-        MakeJunction(SharedDir & "\bg", NGDir & "\bg")
-        MakeJunction(SharedDir & "\chara", NGDir & "\chara")
+        MakeLink(SharedDir & "\bg", NGDir & "\bg")
+        MakeLink(SharedDir & "\chara", NGDir & "\chara")
 
 
 
@@ -152,7 +151,7 @@ Module Module1
             CreateObject("Scripting.FileSystemObject").DeleteFolder(NGDir & "\effect")
         End Try
 
-        MakeJunction(SharedDir & "\effect", NGDir & "\effect")
+        MakeLink(SharedDir & "\effect", NGDir & "\effect")
 
         Try
             If Directory.Exists(NGDir & "\ency") Then
@@ -163,7 +162,7 @@ Module Module1
             CreateObject("Scripting.FileSystemObject").DeleteFolder(NGDir & "\ency")
         End Try
 
-        MakeJunction(SharedDir & "\ency", NGDir & "\ency")
+        MakeLink(SharedDir & "\ency", NGDir & "\ency")
 
         Try
             If Directory.Exists(NGDir & "\se") Then
@@ -173,7 +172,7 @@ Module Module1
         Catch ex As Exception
             CreateObject("Scripting.FileSystemObject").DeleteFolder(NGDir & "\se")
         End Try
-        MakeJunction(SharedDir & "\se", NGDir & "\se")
+        MakeLink(SharedDir & "\se", NGDir & "\se")
 
         Try
             If Directory.Exists(NGDir & "\system") Then
@@ -184,7 +183,7 @@ Module Module1
             CreateObject("Scripting.FileSystemObject").DeleteFolder(NGDir & "\system")
         End Try
 
-        MakeJunction(SharedDir & "\system", NGDir & "\system")
+        MakeLink(SharedDir & "\system", NGDir & "\system")
 
 
         'Now the remaster is back where it was, only with junctions. Time to copy the miscellaneous files.
@@ -200,7 +199,6 @@ Module Module1
         If Not (Directory.Exists(NGDir & "\save")) Then
             Directory.CreateDirectory(NGDir & "\save")
         End If
-
 
 
         'Time to upscale.
@@ -267,50 +265,47 @@ Module Module1
                         Console.ReadLine()
                     End If
                     File.Copy(tempfriname & "_temp", tempfriname)
-                        fri = New FileInfo(tempfriname)
+                    fri = New FileInfo(tempfriname)
 
 
-                        Console.WriteLine("File " & friname & " was interrupted, restarting")
-                    ElseIf listoflines.Contains(friname & ",0") Then   'already upscaled? Check.
+                    Console.WriteLine("File " & friname & " was interrupted, restarting")
+                ElseIf listoflines.Contains(friname & ",0") Then   'already upscaled? Check.
 
-                        Console.WriteLine(RunCommandH("""" & RemasterDir & "\mod\ImageMagick\magick.exe""", "convert """ & fri.FullName & """ -format ""%c\n"" info:"))
+                    Console.WriteLine(RunCommandH("""" & RemasterDir & "\mod\ImageMagick\magick.exe""", "convert """ & fri.FullName & """ -format ""%c\n"" info:"))
 
-                        If Not RunCommandH("""" & RemasterDir & "\mod\ImageMagick\magick.exe""", "convert """ & fri.FullName & """ -format ""%c\n"" info:").Contains("Upscaled") Then
-                            Console.WriteLine("Index file and metadata mismatch. Reupscaling.")
-                            Logs.WriteLine("Index file and metadata mismatch. Reupscaling.")
+                    If Not RunCommandH("""" & RemasterDir & "\mod\ImageMagick\magick.exe""", "convert """ & fri.FullName & """ -format ""%c\n"" info:").Contains("Upscaled") Then
+                        Console.WriteLine("Index file and metadata mismatch. Reupscaling.")
+                        Logs.WriteLine("Index file and metadata mismatch. Reupscaling.")
 
-                            If fri.Extension <> ".png" And File.Exists(fri.FullName.Substring(0, fri.FullName.Length - 4) & ".png") Then
-                                Console.WriteLine("Failsafe for duplicates.")
-                                Logs.WriteLine("Failsafe for duplicates.")
-                                File.Delete(fri.FullName.Substring(0, fri.FullName.Length - 4) & ".png")
+                        If fri.Extension <> ".png" And File.Exists(fri.FullName.Substring(0, fri.FullName.Length - 4) & ".png") Then
+                            Console.WriteLine("Failsafe for duplicates.")
+                            Logs.WriteLine("Failsafe for duplicates.")
+                            File.Delete(fri.FullName.Substring(0, fri.FullName.Length - 4) & ".png")
 
-                                If subfolder.Name = "effect" Or subfolder.Name = "system" Or subfolder.Name = "chara" Then  'If it's a duplicate, then it's not been edited yet? Hopefully? man, fuck if I know.
-                                    If ListOfMerges.Contains(friname) And ShouldMerge = True Then
-                                        Dim tempfriname = fri.FullName
-                                        SplitAndMerge(fri)
-                                        fri = New FileInfo(fri.FullName.Substring(0, fri.FullName.Length - 4) & ".png")
-                                    End If
+                            If subfolder.Name = "effect" Or subfolder.Name = "system" Or subfolder.Name = "chara" Then  'If it's a duplicate, then it's not been edited yet? Hopefully? man, fuck if I know.
+                                If ListOfMerges.Contains(friname) And ShouldMerge = True Then
+                                    Dim tempfriname = fri.FullName
+                                    SplitAndMerge(fri)
+                                    fri = New FileInfo(fri.FullName.Substring(0, fri.FullName.Length - 4) & ".png")
                                 End If
-
                             End If
 
-                            listoflines.Remove(friname & ",0")      'Remove the old line from the list
-                            listoflines.Add(friname & ",1")
-                            File.Copy(fri.FullName, fri.FullName & "_temp", True)
-                            File.Delete(subfolder.FullName & "\filelist.txt")
-                            File.WriteAllLines(subfolder.FullName & "\filelist.txt", listoflines.ToArray)      'Update the file
-                            'Console.ReadLine()
-                        Else
-                            Console.WriteLine("Already upscaled.")
-                            If fri.Extension <> ".png" Then
-                                fri.Delete()
-                            End If
-                            Continue For
                         End If
 
-                    Else    'It never started upscaling
+                        listoflines.Remove(friname & ",0")      'Remove the old line from the list
+                        listoflines.Add(friname & ",1")
+                        File.Copy(fri.FullName, fri.FullName & "_temp", True)
+                        File.Delete(subfolder.FullName & "\filelist.txt")
+                        File.WriteAllLines(subfolder.FullName & "\filelist.txt", listoflines.ToArray)      'Update the file
+                        'Console.ReadLine()
+                    Else
+                        Console.WriteLine("Already upscaled.")
+                        Continue For
+                    End If
 
-                        If subfolder.Name = "effect" Or subfolder.Name = "system" Or subfolder.Name = "chara" Then
+                Else    'It never started upscaling
+
+                    If subfolder.Name = "effect" Or subfolder.Name = "system" Or subfolder.Name = "chara" Then
                         If ListOfMerges.Contains(friname) And ShouldMerge = True Then
                             Dim tempfriname = fri.FullName
                             SplitAndMerge(fri)
@@ -321,6 +316,7 @@ Module Module1
                     listoflines.Add(friname & ",1")
                     Dim sw As StreamWriter = File.AppendText(subfolder.FullName & "\filelist.txt")
                     sw.WriteLine(friname & ",1")
+                    sw.Flush()
                     sw.Close()
                     File.Copy(fri.FullName, fri.FullName & "_temp", True)
                 End If
@@ -356,6 +352,41 @@ Module Module1
             Dim friname As String = fri.Name.Substring(0, fri.Name.Length - 4)
             Console.WriteLine("File " & count & " out of " & fiArr.Length)
             If fri.Extension <> ".bmp" And fri.Extension <> ".png" And fri.Extension <> ".jpg" And fri.Extension <> ".jpeg" Then
+                If fri.Extension = ".dat" And Not fri.FullName.Contains("kidoku") And Not fri.FullName.Contains("NScrflog") And Not fri.FullName.Contains("NScrllog") Then
+                    Dim bytes As Byte() = File.ReadAllBytes(fri.FullName)
+                    Dim IsExt As Boolean = False
+                    For i = 0 To bytes.Length - 1
+                        'Console.Write(Convert.ToChar(bytes(i)))
+                        If Convert.ToChar(bytes(i)) = "\" Then
+                            IsExt = True
+                            'Console.WriteLine(i)
+                            'Console.ReadLine()
+                        End If
+                        If Convert.ToChar(bytes(i)) = "." And IsExt Then
+                            IsExt = False
+                            Console.WriteLine(i)
+                            Console.WriteLine(Convert.ToChar(bytes(i)) & Convert.ToChar(bytes(i + 1)) & Convert.ToChar(bytes(i + 2)) & Convert.ToChar(bytes(i + 3)))
+                            'Console.ReadLine()
+                            If Convert.ToChar(bytes(i + 1)) = "j" And Convert.ToChar(bytes(i + 2)) = "p" And Convert.ToChar(bytes(i + 3)) = "g" Then
+                                bytes(i + 1) = Encoding.Default.GetBytes("p")(0)
+                                bytes(i + 2) = Encoding.Default.GetBytes("n")(0)
+                                bytes(i + 3) = Encoding.Default.GetBytes("g")(0)
+                            End If
+
+                            If Convert.ToChar(bytes(i + 1)) = "b" And Convert.ToChar(bytes(i + 2)) = "m" And Convert.ToChar(bytes(i + 3)) = "p" Then
+                                bytes(i + 1) = Encoding.Default.GetBytes("p")(0)
+                                bytes(i + 2) = Encoding.Default.GetBytes("n")(0)
+                                bytes(i + 3) = Encoding.Default.GetBytes("g")(0)
+                            End If
+
+                        End If
+
+                    Next
+                    'Console.ReadLine()
+
+                    File.WriteAllBytes(fri.FullName, bytes)
+
+                End If
                 Continue For
             End If
             If listoflines.Contains(friname & ",1") Then   'was in progress, grab the copy
@@ -401,6 +432,7 @@ Module Module1
                     listoflines.Add(friname & ",1")
                     Dim sw As StreamWriter = File.AppendText(savefolderinfo.FullName & "\filelist.txt")
                     sw.WriteLine(friname & ",1")
+                    sw.Flush()
                     sw.Close()
                     File.Copy(fri.FullName, fri.FullName & "_temp", True)
                 Else
@@ -444,6 +476,7 @@ Module Module1
 
         Do While File.Exists(NGDir & "\" & CurrentFile & ".txt")
             Console.WriteLine("File " & CurrentFile & ".txt")
+            'Console.ReadLine()
             If Not (File.Exists(NGDir & "\txtbackups\" & CurrentFile & ".txt")) Then
                 File.Move(NGDir & "\" & CurrentFile & ".txt", NGDir & "\txtbackups\" & CurrentFile & ".txt")
             Else
@@ -459,36 +492,46 @@ Module Module1
 
                 If a = ";l19-Upscaled" Then
                     Console.WriteLine("The file has already been processed.")
-                    Console.ReadLine()
+                    'Console.ReadLine()
                     Exit Do
                 End If
+
+
 
                 If Not bodge2 Then
-                    writer.WriteLine(";l19-Upscaled")
-                    bodge2 = True
-                End If
-
-
-                If a = ";$V50000G6750S800,600L10000		;?????800*600????????%1500~" Then           'Special case for the resolution setting
-                    If ScaleFactor = 1.8 Then
-                        a = a.Replace("S800", "S1440")
-                        a = a.Replace("600L", "1080L")
-                    Else
-                        a = a.Replace("S800", "S960")
-                        a = a.Replace("600L", "720L")
+                    If a.Contains("S800,600") Then           'Special case for the resolution setting
+                        If ScaleFactor = 1.8 Then
+                            a = a.Replace("S800", "S1440")
+                            a = a.Replace("600L", "1080L")
+                        Else
+                            a = a.Replace("S800", "S960")
+                            a = a.Replace("600L", "720L")
+                        End If
                     End If
                     writer.WriteLine(a)
+
+                    writer.WriteLine(";l19-upscaled")
+                    a = reader.ReadLine()       'Skips the line that was just created
+                    bodge2 = True
                     Continue Do
                 End If
-                If a Is Nothing Then
-                    Exit Do
-                End If
-                If a.Contains(".bmp") Then
-                    a = a.Replace(".bmp", ".png")
-                End If
+
+                Try
+                    If a.Contains(".bmp") Then
+                        a = a.Replace(".bmp", ".png")
+                    End If
+                Catch ex As Exception
+                    If a Is Nothing Then
+                        Console.WriteLine("Assuming it's the last line.")
+                        Exit Do
+                    End If
+                End Try
+
+
                 If a.Contains(".jpg") Then
                     a = a.Replace(".jpg", ".png")
                 End If
+
                 If a.Contains(".jpeg") Then
                     a = a.Replace(".jpeg", ".png")
                 End If
@@ -497,7 +540,7 @@ Module Module1
                     Console.WriteLine(vbCrLf & a)
                     Dim i As Integer = a.IndexOf(",")
                     a = a.Insert(i + 1, "(")
-                    i = a.IndexOf(",",i+1)
+                    i = a.IndexOf(",", i + 1)
                     a = a.Insert(i, ")" & scalefraction)
                     i = a.IndexOf(",", a.IndexOf(",") + 1)
                     a = a.Insert(i + 1, "(")      'Basically becomes amsp x,y*18/10,18/10*(z)
@@ -567,172 +610,15 @@ commacase2:
 
 
 
-                If a.Contains("lsp ") Or a.Contains("lsp2 ") Or a.Contains("lsph ") Or a.Contains("lsph2 ") Then
-                    If a.Contains("lsp2") Then
-                        Logs.WriteLine("lsp2 encountered. Original line: " & a)
-                    End If
-                    Console.WriteLine("Original line: " & a)
-                    Dim bodge As Boolean = False
-                    If a.IndexOf("lsp") > 0 Then
-                        Console.WriteLine(a)
-                        Console.WriteLine(GetChar(a, a.IndexOf("lsp")))
-                        If GetChar(a, a.IndexOf("lsp")) = ";" Or GetChar(a, a.IndexOf("lsp")) = ">" Then
-                            Console.WriteLine("it's a comment/whatever the fuck the one with > is.")
-                            bodge = True
-                        End If
-                    End If
-                    If bodge = False Then
-                        Dim i As Integer = a.IndexOf("lsp")
-                        i = a.IndexOf("""", i)
-                        Console.WriteLine(a.Substring(i + 1, 3))
-
-
-                        If a.Substring(i + 1, 3) = ":s/" Then
-
-                            Dim i3 As Integer = a.IndexOf(":s/") + 3
-                            Dim i2 As Integer = a.IndexOf(",", i3)
-
-                            i2 = a.IndexOf(",", i2 + 1)
-                            Dim currenttextsize As String = a.Substring(i3, i2 - i3)
-                            Console.WriteLine(currenttextsize)
-
-                            Dim size1, size2 As Integer
-                            Console.WriteLine(currenttextsize.Substring(0, currenttextsize.Length - currenttextsize.IndexOf(",") - 1))
-                            Console.WriteLine(currenttextsize.Substring(currenttextsize.IndexOf(",") + 1))
-
-                            size1 = currenttextsize.Substring(0, currenttextsize.Length - currenttextsize.IndexOf(",") - 1)
-                            size2 = currenttextsize.Substring(currenttextsize.IndexOf(",") + 1)
-                            If ScaleFactor = "1.8" Then
-                                a = a.Replace(":s/" & size1 & "," & size2, ":s/" & size1 + 10 & "," & size2 + 10)
-                            Else
-                                a = a.Replace(":s/" & size1 & "," & size2, ":s/" & size1 + 7 & "," & size2 + 7)
-                            End If
-                            'Text sizes should now be fixed.
-                            Console.WriteLine(a)
-
-                        End If
-
-
-                        i = a.IndexOf("""", i + 1) + 1      'i is now after the " close
-                        If i = 0 Then
-                            i = a.IndexOf(",", i) + 1
-                        End If
-                        i = a.IndexOf(",", i) + 1
-                        a = a.Insert(i, "(")
-                        a = a.Insert(a.IndexOf(",", i), ")" & scalefraction)
-                        Dim i4 As Integer = a.IndexOf(",", i) + 1   'i4 should be just after the ,
-                        a = a.Insert(i4, "(")
-                        Console.WriteLine((GetChar(a, i4)))
-
-                        Console.WriteLine(a.IndexOf(":", i4))
-                        Console.WriteLine(a.IndexOf(";", i4))
-                        If a.IndexOf(":", i4) <> -1 Then
-                            If a.IndexOf(",", i4) <> -1 And a.IndexOf(",", i4) < a.IndexOf(":", i4) Then
-                                GoTo commacase
-                            End If
-                            i4 = a.IndexOf(":", i4)
-                            a = a.Insert(i4, ")" & scalefraction)
-                        ElseIf a.IndexOf(";", i4) <> -1 Then
-                            If a.IndexOf(",", i4) <> -1 And a.IndexOf(",", i4) < a.IndexOf(";", i4) Then
-                                GoTo commacase
-                            End If
-                            i4 = a.IndexOf(";", i4)
-                            Do While Not (Char.IsNumber(GetChar(a, i4)))
-                                Console.WriteLine(GetChar(a, i4))
-                                i4 = i4 - 1
-                            Loop
-
-
-                            If GetChar(a, i4 + 1) = "," Then
-                                Console.WriteLine(a)
-                                Console.WriteLine(GetChar(a, i4 + 3))
-                                'Console.ReadLine()
-                                If GetChar(a, i4 + 3) = "%" Then
-                                    i4 = i4 + 3
-                                    Dim r As Regex = New Regex("[^a-zA-Z0-9()%+]", RegexOptions.IgnoreCase)
-                                    Dim m As Match
-                                    m = r.Match(GetChar(a, i4))
-                                    Do Until m.Success
-                                        i4 = i4 + 1
-                                        m = r.Match(GetChar(a, i4))
-                                    Loop
-                                    a = a.Insert(i4 - 1, ")" & scalefraction)
-                                    Console.WriteLine(a)
-                                    'Console.ReadLine()
-                                End If
-
-                            Else
-                                Dim i5 As Integer = i4
-                                Do While Char.IsNumber(GetChar(a, i5))
-                                    i5 = i5 - 1
-                                Loop
-                                If GetChar(a, i5) = "+" Then
-                                    a = a.Insert(i4, ")" & scalefraction)
-                                Else
-                                    a = a.Insert(i4, ")" & scalefraction)
-                                End If
-                                Console.WriteLine(a)
-                                'Console.ReadLine()
-                            End If
-
-                            Console.WriteLine(a)
-                        ElseIf a.IndexOf(",", i4) <> -1 Then
-commacase:
-                            i4 = a.IndexOf(",", i4 + 1)
-                            a = a.Insert(i4, ")" & scalefraction)
-                        Else
-                            a = a & ")" & scalefraction
-                        End If
-
-                        Console.WriteLine(a)
-
-                        If a.Contains("**") Or a.Contains(",*") Or a.Contains(":*") Or a.Contains("lsp2") Then
-                            Logs.WriteLine("Modified line: " & a)
-                            'Console.ReadLine()
-                        End If
-                        'Positions should now be multiplied correctly.
-
-                    End If
-
+                If a.Contains("lsp") Then
+                    Dim asdjas As String = a
+                    a = HandleLSP(a)
+                    Console.WriteLine(asdjas)
+                    Console.WriteLine(a)
                 End If
 
                 If a.Contains("strsp") Then
-                    Console.WriteLine(a)
-                    Dim i As Integer = a.IndexOf("strsp")
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i) + 1
-                    a = a.Insert(i, "(")
-                    i = a.IndexOf(",", i)
-                    a = a.Insert(i, ")" & scalefraction)
-                    i = a.IndexOf(",", i) + 1
-                    a = a.Insert(i, "(")
-                    i = a.IndexOf(",", i)
-                    a = a.Insert(i, ")" & scalefraction)
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i)
-                    If ScaleFactor = "1.8" Then
-                        a = a.Insert(i, "+12")
-                    Else
-                        a = a.Insert(i, "+5")
-                    End If
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i)
-                    If ScaleFactor = "1.8" Then
-                        a = a.Insert(i, "+12")
-                    Else
-                        a = a.Insert(i, "+5")
-                    End If
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i)
-                    If ScaleFactor = "1.8" Then
-                        a = a.Insert(i, "+18")
-                    Else
-                        a = a.Insert(i, "+12")
-                    End If
-                    Console.WriteLine(a)
+                    a = HandleSTRSP(a)
                 End If
 
                 If a.Contains("getscreenshot") Then
@@ -780,127 +666,23 @@ commacase:
                 End If
 
                 If a.Contains("btn ") Then
-                    Console.WriteLine(a)
-                    Dim r As Regex = New Regex("[^a-zA-Z0-9]btn ", RegexOptions.IgnoreCase)
-                    Dim m As Match
-                    m = r.Match(a)
-                    If m.Success Then
-                        Dim i As Integer = a.IndexOf("btn ")
-                        i = a.IndexOf(",", i) + 1
-                        i = a.IndexOf(",", i)
-                        a = a.Insert(i, scalefraction)
-                        i = a.IndexOf(",", i) + 1
-                        i = a.IndexOf(",", i)
-                        a = a.Insert(i, scalefraction)
-                        i = a.IndexOf(",", i) + 1
-                        i = a.IndexOf(",", i)
-                        a = a.Insert(i, scalefraction)
-                        i = a.IndexOf(",", i) + 1
-                        i = a.IndexOf(",", i)
-                        a = a.Insert(i, scalefraction)
-                        Console.WriteLine(a)
-                    End If
+                    a = Handlebtn(a)
                 End If
 
                 If a.Contains("setwindow3") Then
-                    Dim i As Integer = a.IndexOf(",")
-                    a = a.Insert(a.IndexOf(","), scalefraction)
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i)
-                    a = a.Insert(i, scalefraction)
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i)
-                    If ScaleFactor = "1.8" Then
-                        a = a.Insert(i, "+9")
-                    Else
-                        a = a.Insert(i, "+4")
-                    End If
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i)
-                    If ScaleFactor = "1.8" Then
-                        a = a.Insert(i, "+9")
-                    Else
-                        a = a.Insert(i, "+4")
-                    End If
-                    i = a.IndexOf("#")
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i)
-                    a = a.Insert(i, scalefraction)
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i)
-                    a = a.Insert(i, scalefraction)
-                    i = a.IndexOf(",", i) + 1
-                    i = a.IndexOf(",", i)
-                    a = a.Insert(i, scalefraction)
-                    i = a.IndexOf(":", i) - 1
-                    a = a.Insert(i, scalefraction)
-
-                    Console.WriteLine(a)
-
+                    a = handlesetwindow(a)
                 End If
 
                 If a.Contains("bar ") Then
-                    Dim i As Integer = a.IndexOf("bar ") + 4
-                    Console.WriteLine(a)
-                    Console.WriteLine(GetChar(a, i + 1))
-
-                    If Char.IsNumber(GetChar(a, i + 1)) Then
-                        i = a.IndexOf(",", i) + 1
-                        i = a.IndexOf(",", i) + 1
-                        i = a.IndexOf(",", i)
-                        a = a.Insert(i, scalefraction)
-                        i = a.IndexOf(",", i + 1) + 1
-                        i = a.IndexOf(",", i)
-                        a = a.Insert(i, scalefraction)
-                        i = a.IndexOf(",", i + 1) + 1
-                        i = a.IndexOf(",", i)
-                        a = a.Insert(i, scalefraction)
-                        i = a.IndexOf(",", i + 1) + 1
-                        i = a.IndexOf(",", i)
-                        a = a.Insert(i, scalefraction)
-                        Console.WriteLine(a)
-
-                    End If
+                    a = Handlebar(a)
                 End If
 
                 If a.Contains("mov %monster_x") Then
-                    Dim i As Integer = a.IndexOf(",")
-                    Dim indexchar As String
-                    Console.WriteLine(GetChar(a, i))
-                    If GetChar(a, i) <> "x" Then        'This handles the cases where it's %monster_xb etc.
-                        indexchar = GetChar(a, i)
-                    Else
-                        indexchar = ""
-                    End If
-                    If a.Contains(":") Then         'if there is a command following this one
-                        i = a.IndexOf(":")
-                        a = a.Insert(i, ":mul %monster_x" & indexchar & "," & ScaleFactor)
-                    Else
-                        a = a & ":mul %monster_x" & indexchar & "," & ScaleFactor
-                    End If
-                    Console.WriteLine(a)
-
+                    a = Handlemovmonx(a)
                 End If
 
                 If a.Contains("mov %monster_y") Then
-                    Dim i As Integer = a.IndexOf(",")
-                    Dim indexchar As String
-                    Console.WriteLine(GetChar(a, i))
-                    If GetChar(a, i) <> "y" Then        'This handles the cases where it's %monster_xb etc.
-                        indexchar = GetChar(a, i)
-                    Else
-                        indexchar = ""
-                    End If
-                    If a.Contains(":") Then         'if there is a command following this one
-                        i = a.IndexOf(":")
-                        a = a.Insert(i, ":mul %monster_y" & indexchar & "," & ScaleFactor)
-                    Else
-                        a = a & ":mul %monster_y" & indexchar & "," & ScaleFactor
-                    End If
-                    Console.WriteLine(a)
-
+                    a = handlemovmony(a)
                 End If
 
                 If a.Contains("for %") And Not a.Contains("next") Then
@@ -939,7 +721,54 @@ commacase:
                     Dim lines As New List(Of String)
                     Dim currentelement As Integer = 0
                     lines.Add(reader.ReadLine)
-                    Do While Not lines.ElementAt(currentelement).Contains("next")       'Loop until you find the end of the for loop
+
+                    Do While Not lines.Item(currentelement).Contains("next")       'Loop until you find the end of the for loop
+
+
+                        If lines.Item(currentelement).Contains(".bmp") Then
+                            lines.Item(currentelement) = lines.Item(currentelement).Replace(".bmp", ".png")
+                        End If
+
+                        If lines.Item(currentelement).Contains(".jpg") Then
+                            lines.Item(currentelement) = lines.Item(currentelement).Replace(".jpg", ".png")
+                        End If
+
+                        If lines.Item(currentelement).Contains(".jpeg") Then
+                            lines.Item(currentelement) = lines.Item(currentelement).Replace(".jpeg", ".png")
+                        End If
+
+
+                        If lines.Item(currentelement).Contains("btn ") Then
+                            lines.Item(currentelement) = Handlebtn(lines.Item(currentelement))
+                        End If
+
+                        If lines.Item(currentelement).Contains("setwindow3") Then
+                            lines.Item(currentelement) = Handlesetwindow(lines.Item(currentelement))
+                        End If
+
+                        If lines.Item(currentelement).Contains("bar ") Then
+                            lines.Item(currentelement) = handlebar(lines.Item(currentelement))
+                        End If
+
+                        If lines.Item(currentelement).Contains("mov %monster_x") Then
+                            lines.Item(currentelement) = Handlemovmonx(lines.Item(currentelement))
+                        End If
+
+                        If lines.Item(currentelement).Contains("mov %monster_y") Then
+                            lines.Item(currentelement) = handlemovmony(lines.Item(currentelement))
+                        End If
+
+                        If lines.Item(currentelement).Contains("lsp") Then
+                            lines.Item(currentelement) = HandleLSP(lines.Item(currentelement))
+                            Console.WriteLine("UHH")
+                        End If
+
+                        If lines.Item(currentelement).Contains("strsp") Then
+                            lines.Item(currentelement) = HandleSTRSP(lines.Item(currentelement))
+                        End If
+
+
+
                         If lines.Item(currentelement).Contains("amsp") Then
                             hasMSP = True
                             i = lines.Item(currentelement).IndexOf(" ")
@@ -1087,6 +916,8 @@ commacase:
                             Console.WriteLine(lines.Item(currentelement))
 
                             'Console.ReadLine()
+                        ElseIf lines.Item(currentelement).Contains("lsp") Then
+
                         End If
 
                         lines.Add(reader.ReadLine)
@@ -1113,7 +944,6 @@ commacase:
                     Next
                     'Console.ReadLine()
                     Console.WriteLine("*****************")
-
                 End If
 
 
@@ -1145,7 +975,7 @@ commacase:
         Logs.Close()
     End Sub
 
-    Sub MakeJunction(Link As String, Target As String)
+    Sub MakeLink(Link As String, Target As String)
         If Not (Directory.Exists(Target)) Then
             RunCommandH("""C:\Windows\System32\cmd.exe""", " /c mklink /J " & """" & Target & """" & " """ & Link & """")
         End If
@@ -1183,7 +1013,7 @@ commacase:
             sOutput = oStreamReader.ReadToEnd()
         End Using
         If Not Arguments.Contains("verbose") Or Arguments.Contains("[1x1") Then
-            Logs.Writeline(sOutput)
+            Logs.WriteLine(sOutput)
             'Console.WriteLine(sOutput)
         End If
 
@@ -1197,17 +1027,16 @@ commacase:
     End Function
 
     Sub Upscale(fri As FileInfo)
-
         RunCommandH("""" & RemasterDir & "\mod\waifu2x\waifu2x-caffe-cui.exe""", "-p " & mode & " -s " & ScaleFactor & " --Model_dir """ & RemasterDir & "\mod\waifu2x\models\anime_style_art_rgb"" -i """ & fri.FullName & """ -o """ & fri.FullName.Substring(0, fri.FullName.Length - 4) & ".png""")
-        If fri.Extension <> ".png" Then
-            fri.Delete()
-        End If
 
         RunCommandH("""" & RemasterDir & "\mod\pngquant\pngquant.exe""", "--skip-if-larger -f --ext _c.png """ & fri.FullName.Substring(0, fri.FullName.Length - 4) & ".png""")
         File.Delete(fri.FullName.Substring(0, fri.FullName.Length - 4) & ".png")
         File.Move(fri.FullName.Substring(0, fri.FullName.Length - 4) & "_c.png", fri.FullName.Substring(0, fri.FullName.Length - 4) & ".png")
 
         RunCommandH("""" & RemasterDir & "\mod\ImageMagick\magick.exe""", "convert """ & fri.FullName.Substring(0, fri.FullName.Length - 4) & ".png""" & " -set comment ""Upscaled"" """ & fri.FullName.Substring(0, fri.FullName.Length - 4) & ".png""")
+        If fri.Extension <> ".png" Then
+            fri.Delete()
+        End If
     End Sub
 
 
@@ -1258,6 +1087,316 @@ commacase:
         End If
 
     End Function
+
+    Function HandleLSP(a As String) As String
+        Dim tempa As String = a
+        If a.Contains("lsp2") Then
+            Logs.WriteLine("lsp2 encountered. Original line: " & a)
+        End If
+        Console.WriteLine("Original line: " & a)
+        If tempa.Contains("lsp %sub2") Then Console.ReadLine()
+        Dim bodge As Boolean = False
+        If a.IndexOf("lsp") > 0 Then
+            Console.WriteLine(a)
+            Console.WriteLine(GetChar(a, a.IndexOf("lsp")))
+            If GetChar(a, a.IndexOf("lsp")) = ">" Or (a.IndexOf(";") < a.IndexOf("lsp") And a.IndexOf(";") <> -1) Then
+                Console.WriteLine(GetChar(a, a.IndexOf("lsp")))
+                Console.WriteLine(a.IndexOf(";"))
+                Console.WriteLine(a.IndexOf("lsp"))
+                Console.WriteLine("it's a comment/whatever the fuck the one with > is.")
+                bodge = True
+            End If
+        End If
+        If bodge = False Then
+            Dim i As Integer = a.IndexOf("lsp")
+            i = a.IndexOf("""", i)
+            Console.WriteLine(a.Substring(i + 1, 3))
+
+            If tempa.Contains("lsp %sub2") Then Console.ReadLine()
+
+            If a.Substring(i + 1, 3) = ":s/" Then
+
+                Dim i3 As Integer = a.IndexOf(":s/") + 3
+                Dim i2 As Integer = a.IndexOf(",", i3)
+
+                i2 = a.IndexOf(",", i2 + 1)
+                Dim currenttextsize As String = a.Substring(i3, i2 - i3)
+                Console.WriteLine(currenttextsize)
+
+                Dim size1, size2 As Integer
+                Console.WriteLine(currenttextsize.Substring(0, currenttextsize.Length - currenttextsize.IndexOf(",") - 1))
+                Console.WriteLine(currenttextsize.Substring(currenttextsize.IndexOf(",") + 1))
+
+                size1 = currenttextsize.Substring(0, currenttextsize.Length - currenttextsize.IndexOf(",") - 1)
+                size2 = currenttextsize.Substring(currenttextsize.IndexOf(",") + 1)
+                If ScaleFactor = "1.8" Then
+                    a = a.Replace(":s/" & size1 & "," & size2, ":s/" & size1 + 10 & "," & size2 + 10)
+                Else
+                    a = a.Replace(":s/" & size1 & "," & size2, ":s/" & size1 + 7 & "," & size2 + 7)
+                End If
+                'Text sizes should now be fixed.
+                Console.WriteLine(a)
+                If tempa.Contains("lsp %sub2") Then Console.ReadLine()
+            End If
+
+
+            i = a.IndexOf("""", i + 1) + 1      'i is now after the " close
+            If i = 0 Then
+                i = a.IndexOf(",", i) + 1
+            End If
+            i = a.IndexOf(",", i) + 1
+            a = a.Insert(i, "(")
+            a = a.Insert(a.IndexOf(",", i), ")" & scalefraction)
+            Dim i4 As Integer = a.IndexOf(",", i) + 1   'i4 should be just after the ,
+            a = a.Insert(i4, "(")
+            Console.WriteLine((GetChar(a, i4)))
+
+            Console.WriteLine(a.IndexOf(":", i4))
+            Console.WriteLine(a.IndexOf(";", i4))
+            If a.IndexOf(":", i4) <> -1 Then
+                If a.IndexOf(",", i4) <> -1 And a.IndexOf(",", i4) < a.IndexOf(":", i4) Then
+                    GoTo commacase
+                End If
+                i4 = a.IndexOf(":", i4)
+                a = a.Insert(i4, ")" & scalefraction)
+            ElseIf a.IndexOf(";", i4) <> -1 Then
+                If a.IndexOf(",", i4) <> -1 And a.IndexOf(",", i4) < a.IndexOf(";", i4) Then
+                    GoTo commacase
+                End If
+                i4 = a.IndexOf(";", i4)
+                Do While Not (Char.IsNumber(GetChar(a, i4)))
+                    Console.WriteLine(GetChar(a, i4))
+                    i4 = i4 - 1
+                Loop
+
+
+                If GetChar(a, i4 + 1) = "," Then
+                    Console.WriteLine(a)
+                    Console.WriteLine(GetChar(a, i4 + 3))
+                    'Console.ReadLine()
+                    If GetChar(a, i4 + 3) = "%" Then
+                        i4 = i4 + 3
+                        Dim r As Regex = New Regex("[^a-zA-Z0-9()%+]", RegexOptions.IgnoreCase)
+                        Dim m As Match
+                        m = r.Match(GetChar(a, i4))
+                        Do Until m.Success
+                            i4 = i4 + 1
+                            m = r.Match(GetChar(a, i4))
+                        Loop
+                        a = a.Insert(i4 - 1, ")" & scalefraction)
+                        Console.WriteLine(a)
+                        If tempa.Contains("lsp %sub2") Then Console.ReadLine()
+                    End If
+
+                Else
+                    Dim i5 As Integer = i4
+                    Do While Char.IsNumber(GetChar(a, i5))
+                        i5 = i5 - 1
+                    Loop
+                    If GetChar(a, i5) = "+" Then
+                        a = a.Insert(i4, ")" & scalefraction)
+                    Else
+                        a = a.Insert(i4, ")" & scalefraction)
+                    End If
+                    Console.WriteLine(a)
+                    If tempa.Contains("lsp %sub2") Then Console.ReadLine()
+
+                End If
+
+                Console.WriteLine(a)
+                If tempa.Contains("lsp %sub2") Then Console.ReadLine()
+
+            ElseIf a.IndexOf(",", i4) <> -1 Then
+commacase:
+                i4 = a.IndexOf(",", i4 + 1)
+                a = a.Insert(i4, ")" & scalefraction)
+            Else
+                a = a & ")" & scalefraction
+            End If
+
+            Console.WriteLine(a)
+
+            If a.Contains("**") Or a.Contains(",*") Or a.Contains(":*") Or a.Contains("lsp2") Then
+                Logs.WriteLine("Modified line: " & a)
+                'Console.ReadLine()
+            End If
+            'Positions should now be multiplied correctly.
+
+        End If
+
+        Return a
+    End Function
+
+    Function HandleSTRSP(a As String) As String
+        Console.WriteLine(a)
+        Dim i As Integer = a.IndexOf("strsp")
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i) + 1
+        a = a.Insert(i, "(")
+        i = a.IndexOf(",", i)
+        a = a.Insert(i, ")" & scalefraction)
+        i = a.IndexOf(",", i) + 1
+        a = a.Insert(i, "(")
+        i = a.IndexOf(",", i)
+        a = a.Insert(i, ")" & scalefraction)
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i)
+        If ScaleFactor = "1.8" Then
+            a = a.Insert(i, "+12")
+        Else
+            a = a.Insert(i, "+5")
+        End If
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i)
+        If ScaleFactor = "1.8" Then
+            a = a.Insert(i, "+12")
+        Else
+            a = a.Insert(i, "+5")
+        End If
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i)
+        If ScaleFactor = "1.8" Then
+            a = a.Insert(i, "+18")
+        Else
+            a = a.Insert(i, "+12")
+        End If
+        Console.WriteLine(a)
+
+        Return a
+    End Function
+
+    Function Handlesetwindow(a As String) As String
+        Dim i As Integer = a.IndexOf(",")
+        a = a.Insert(a.IndexOf(","), scalefraction)
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i)
+        a = a.Insert(i, scalefraction)
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i)
+        If ScaleFactor = "1.8" Then
+            a = a.Insert(i, "+9")
+        Else
+            a = a.Insert(i, "+4")
+        End If
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i)
+        If ScaleFactor = "1.8" Then
+            a = a.Insert(i, "+9")
+        Else
+            a = a.Insert(i, "+4")
+        End If
+        i = a.IndexOf("#")
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i)
+        a = a.Insert(i, scalefraction)
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i)
+        a = a.Insert(i, scalefraction)
+        i = a.IndexOf(",", i) + 1
+        i = a.IndexOf(",", i)
+        a = a.Insert(i, scalefraction)
+        i = a.IndexOf(":", i) - 1
+        a = a.Insert(i, scalefraction)
+
+        Console.WriteLine(a)
+        Return a
+    End Function
+
+    Function handlebar(a As String) As String
+        Dim i As Integer = a.IndexOf("bar ") + 4
+        Console.WriteLine(a)
+        Console.WriteLine(GetChar(a, i + 1))
+
+        If Char.IsNumber(GetChar(a, i + 1)) Then
+            i = a.IndexOf(",", i) + 1
+            i = a.IndexOf(",", i) + 1
+            i = a.IndexOf(",", i)
+            a = a.Insert(i, scalefraction)
+            i = a.IndexOf(",", i + 1) + 1
+            i = a.IndexOf(",", i)
+            a = a.Insert(i, scalefraction)
+            i = a.IndexOf(",", i + 1) + 1
+            i = a.IndexOf(",", i)
+            a = a.Insert(i, scalefraction)
+            i = a.IndexOf(",", i + 1) + 1
+            i = a.IndexOf(",", i)
+            a = a.Insert(i, scalefraction)
+            Console.WriteLine(a)
+
+        End If
+        Return a
+    End Function
+
+    Function Handlemovmonx(a As String) As String
+        Dim i As Integer = a.IndexOf(",")
+        Dim indexchar As String
+        Console.WriteLine(GetChar(a, i))
+        If GetChar(a, i) <> "x" Then        'This handles the cases where it's %monster_xb etc.
+            indexchar = GetChar(a, i)
+        Else
+            indexchar = ""
+        End If
+        If a.Contains(":") Then         'if there is a command following this one
+            i = a.IndexOf(":")
+            a = a.Insert(i, ":mul %monster_x" & indexchar & "," & ScaleFactor)
+        Else
+            a = a & ":mul %monster_x" & indexchar & "," & ScaleFactor
+        End If
+        Console.WriteLine(a)
+
+        Return a
+    End Function
+
+    Function handlemovmony(a As String) As String
+        Dim i As Integer = a.IndexOf(",")
+        Dim indexchar As String
+        Console.WriteLine(GetChar(a, i))
+        If GetChar(a, i) <> "y" Then        'This handles the cases where it's %monster_xb etc.
+            indexchar = GetChar(a, i)
+        Else
+            indexchar = ""
+        End If
+        If a.Contains(":") Then         'if there is a command following this one
+            i = a.IndexOf(":")
+            a = a.Insert(i, ":mul %monster_y" & indexchar & "," & ScaleFactor)
+        Else
+            a = a & ":mul %monster_y" & indexchar & "," & ScaleFactor
+        End If
+        Console.WriteLine(a)
+
+        Return a
+    End Function
+
+    Function Handlebtn(a As String) As String
+        Console.WriteLine(a)
+        Dim r As Regex = New Regex("[^a-zA-Z0-9]btn ", RegexOptions.IgnoreCase)
+        Dim m As Match
+        m = r.Match(a)
+        If m.Success Then
+            Dim i As Integer = a.IndexOf("btn ")
+            i = a.IndexOf(",", i) + 1
+            i = a.IndexOf(",", i)
+            a = a.Insert(i, scalefraction)
+            i = a.IndexOf(",", i) + 1
+            i = a.IndexOf(",", i)
+            a = a.Insert(i, scalefraction)
+            i = a.IndexOf(",", i) + 1
+            i = a.IndexOf(",", i)
+            a = a.Insert(i, scalefraction)
+            i = a.IndexOf(",", i) + 1
+            i = a.IndexOf(",", i)
+            a = a.Insert(i, scalefraction)
+            Console.WriteLine(a)
+        End If
+
+        Return a
+    End Function
+
 
     Sub SplitAndMerge(fri As FileInfo)
         Dim filenameonly As String = fri.FullName.Substring(0, fri.FullName.Length - 4)
