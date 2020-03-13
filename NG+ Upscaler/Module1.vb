@@ -36,31 +36,62 @@ Module Module1
         Logs.WriteLine(vbCrLf & vbCrLf & vbCrLf & vbCrLf & vbCrLf & vbCrLf & DateTime.Now.ToShortDateString & " - " & Now.TimeOfDay.ToString & vbCrLf & vbCrLf & vbCrLf & vbCrLf & vbCrLf & vbCrLf)
 
 
-        Console.WriteLine("To use this installer the following folder structure is required:")
-        Console.WriteLine(">Parent directory")
-        Console.WriteLine("     >NG+ directory (full install or just the .zip file of a build)")
-        Console.WriteLine("     >Directory where the Remaster is installed")
-        Console.WriteLine("This file must be placed inside the parent directory.")
-        Console.WriteLine("Press Enter to continue.")
-        Console.ReadLine()
+        Dim AbsPath As Integer = 0
+        Do While AbsPath <> 1 And AbsPath <> 2
+            Console.Clear()
+            Console.WriteLine("This installer requires that you have both the remaster installed (with the sidestoryupscaler) and have either a")
+            Console.WriteLine("build of NG+ or a previous install (saves made in the normal NG+ will work MOSTLY fine)")
+            Console.WriteLine("To use this installer you either:")
+            Console.WriteLine("1) Need the following folder structure:")
+            Console.WriteLine(">Parent directory")
+            Console.WriteLine("     >NG+ directory (full install or just the .zip file of a build)")
+            Console.WriteLine("     >Directory where the Remaster is installed")
+            Console.WriteLine("This file must be placed inside the parent directory.")
+            Console.WriteLine()
+            Console.WriteLine("2) Input the ABSOLUTE path (aka the full path) to the Remaster's folder, NG+'s folder and where you want the new ""Shared resources"" folder to be. ")
+            Console.WriteLine()
+            Console.WriteLine("Please note that moving any of these folders will break the installation and will require running this tool again.")
+            Console.WriteLine("It is also possible to update your install of NG+ with a newer build - simply apply the patch and run this tool again.")
+            Console.WriteLine("If you are updating the install and using the absolute path, please note that the shared resources directory must be the same as the original one you created when first running this tool.")
+            Console.WriteLine()
+            Console.WriteLine("Please input your choice")
+            Try
+                AbsPath = Console.ReadLine()
+            Catch ex As Exception
+
+            End Try
+        Loop
+        AbsPath = AbsPath - 1
         Console.Clear()
         Do
-            Console.WriteLine("Please input the folder name of the NG+ install/build:")
-            NGDir = Console.ReadLine()
-            NGDir = ParentDir & "\" & NGDir
+            If AbsPath Then
+                Console.WriteLine("Please input the path to the NG+ install/build:")
+                NGDir = Console.ReadLine().Replace("""", "")
+            Else
+                Console.WriteLine("Please input the folder name of the NG+ install/build:")
+                NGDir = Console.ReadLine()
+                NGDir = ParentDir & "\" & NGDir
+            End If
+
             If Not (Directory.Exists(NGDir)) Then
                 Console.WriteLine("That folder does not exist. Try again.")
             ElseIf Not (File.Exists(NGDir & "\mon_que_ng+.exe")) Then
-
                 Console.WriteLine("The folder does not contain NG+.")
             End If
 
         Loop While Not Directory.Exists(NGDir) Or Not File.Exists(NGDir & "\mon_que_ng+.exe")
+
         Console.Clear()
         Do
-            Console.WriteLine("Please input the folder name of where the Remaster was installed:")
-            RemasterDir = Console.ReadLine()
-            RemasterDir = ParentDir & "\" & RemasterDir
+            If AbsPath Then
+                Console.WriteLine("Please input the path to the Remaster install:")
+                RemasterDir = Console.ReadLine().Replace("""", "")
+            Else
+                Console.WriteLine("Please input the folder name of where the Remaster was installed:")
+                RemasterDir = Console.ReadLine()
+                RemasterDir = ParentDir & "\" & RemasterDir
+            End If
+
             If Not (Directory.Exists(RemasterDir)) Then
                 Console.WriteLine("That folder does not exist. Try again.")
             ElseIf Not (File.Exists(RemasterDir & "\Monster Girl Quest Remastered.exe")) Then
@@ -68,6 +99,17 @@ Module Module1
             End If
 
         Loop While Not Directory.Exists(RemasterDir) Or Not File.Exists(RemasterDir & "\Monster Girl Quest Remastered.exe")
+
+        If AbsPath Then
+            Do
+                Console.Clear()
+                Console.WriteLine("Please input the path where the Shared Resources folder will be:")
+                SharedDir = Console.ReadLine().Replace("""", "")
+                If SharedDir <> "" Then
+                    Exit Do
+                End If
+            Loop
+        End If
 
         Do
             Console.WriteLine("Use GPU acceleration? (Note: Requires an Nvidia GPU and CUDA, run cuda.exe to install it if you haven't already, it's in the mod folder of the remaster)")
@@ -119,14 +161,14 @@ Module Module1
 
 
 
-        If Not (Directory.Exists(SharedDir)) Then
+        If Not (Directory.Exists(SharedDir & "\bg")) Then
             Directory.CreateDirectory(SharedDir)
-            Directory.Move(RemasterDir & "\bg", SharedDir & "\bg")
-            Directory.Move(RemasterDir & "\chara", SharedDir & "\chara")
-            Directory.Move(RemasterDir & "\effect", SharedDir & "\effect")
-            Directory.Move(RemasterDir & "\ency", SharedDir & "\ency")
-            Directory.Move(RemasterDir & "\se", SharedDir & "\se")
-            Directory.Move(RemasterDir & "\system", SharedDir & "\system")
+            My.Computer.FileSystem.MoveDirectory(RemasterDir & "\bg", SharedDir & "\bg")
+            My.Computer.FileSystem.MoveDirectory(RemasterDir & "\chara", SharedDir & "\chara")
+            My.Computer.FileSystem.MoveDirectory(RemasterDir & "\effect", SharedDir & "\effect")
+            My.Computer.FileSystem.MoveDirectory(RemasterDir & "\ency", SharedDir & "\ency")
+            My.Computer.FileSystem.MoveDirectory(RemasterDir & "\se", SharedDir & "\se")
+            My.Computer.FileSystem.MoveDirectory(RemasterDir & "\system", SharedDir & "\system")
         End If
         'We have established where NG+ and the remaster are installed. Let's start moving the folders.
         'Now we have all the dirs moved. Junctions time.
@@ -199,7 +241,6 @@ Module Module1
         If Not (Directory.Exists(NGDir & "\save")) Then
             Directory.CreateDirectory(NGDir & "\save")
         End If
-
 
         'Time to upscale.
 
