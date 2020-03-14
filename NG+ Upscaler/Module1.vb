@@ -526,6 +526,7 @@ Module Module1
 
             Dim reader As StreamReader = New StreamReader(NGDir & "\txtbackups\" & CurrentFile & ".txt", System.Text.Encoding.Default)
             Dim writer As StreamWriter = My.Computer.FileSystem.OpenTextFileWriter(NGDir & "\" & CurrentFile & ".txt", False, Encoding.Default)
+            writer.AutoFlush = True
             Dim a As String
             Dim bodge2 As Boolean = False
             Do
@@ -552,7 +553,7 @@ Module Module1
                     writer.WriteLine(a)
 
                     writer.WriteLine(";l19-upscaled")
-                    a = reader.ReadLine()       'Skips the line that was just created
+
                     bodge2 = True
                     Continue Do
                 End If
@@ -1135,7 +1136,7 @@ commacase2:
             Logs.WriteLine("lsp2 encountered. Original line: " & a)
         End If
         Console.WriteLine("Original line: " & a)
-        If tempa.Contains("lsp %sub2") Then Console.ReadLine()
+
         Dim bodge As Boolean = False
         If a.IndexOf("lsp") > 0 Then
             Console.WriteLine(a)
@@ -1153,7 +1154,7 @@ commacase2:
             i = a.IndexOf("""", i)
             Console.WriteLine(a.Substring(i + 1, 3))
 
-            If tempa.Contains("lsp %sub2") Then Console.ReadLine()
+
 
             If a.Substring(i + 1, 3) = ":s/" Then
 
@@ -1177,7 +1178,7 @@ commacase2:
                 End If
                 'Text sizes should now be fixed.
                 Console.WriteLine(a)
-                If tempa.Contains("lsp %sub2") Then Console.ReadLine()
+
             End If
 
 
@@ -1226,7 +1227,7 @@ commacase2:
                         Loop
                         a = a.Insert(i4 - 1, ")" & scalefraction)
                         Console.WriteLine(a)
-                        If tempa.Contains("lsp %sub2") Then Console.ReadLine()
+
                     End If
 
                 Else
@@ -1240,12 +1241,12 @@ commacase2:
                         a = a.Insert(i4, ")" & scalefraction)
                     End If
                     Console.WriteLine(a)
-                    If tempa.Contains("lsp %sub2") Then Console.ReadLine()
+
 
                 End If
 
                 Console.WriteLine(a)
-                If tempa.Contains("lsp %sub2") Then Console.ReadLine()
+
 
             ElseIf a.IndexOf(",", i4) <> -1 Then
 commacase:
