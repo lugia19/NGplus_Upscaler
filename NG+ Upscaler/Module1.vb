@@ -578,7 +578,7 @@ Module Module1
                     a = a.Replace(".jpeg", ".png")
                 End If
 
-                If a.Contains("amsp") Then
+                If a.Contains("amsp") And Not a.Contains("%textlastx") Then
                     Console.WriteLine(vbCrLf & a)
                     Dim i As Integer = a.IndexOf(",")
                     a = a.Insert(i + 1, "(")
@@ -1132,6 +1132,7 @@ commacase2:
 
     Function HandleLSP(a As String) As String
         Dim tempa As String = a
+
         If a.Contains("lsp2") Then
             Logs.WriteLine("lsp2 encountered. Original line: " & a)
         End If
@@ -1174,7 +1175,7 @@ commacase2:
                 If ScaleFactor = "1.8" Then
                     a = a.Replace(":s/" & size1 & "," & size2, ":s/" & size1 + 10 & "," & size2 + 10)
                 Else
-                    a = a.Replace(":s/" & size1 & "," & size2, ":s/" & size1 + 7 & "," & size2 + 7)
+                    a = a.Replace(":s/" & size1 & "," & size2, ":s/" & size1 + 4 & "," & size2 + 4)
                 End If
                 'Text sizes should now be fixed.
                 Console.WriteLine(a)
@@ -1288,14 +1289,14 @@ commacase:
         If ScaleFactor = "1.8" Then
             a = a.Insert(i, "+12")
         Else
-            a = a.Insert(i, "+5")
+            a = a.Insert(i, "+4")
         End If
         i = a.IndexOf(",", i) + 1
         i = a.IndexOf(",", i)
         If ScaleFactor = "1.8" Then
             a = a.Insert(i, "+12")
         Else
-            a = a.Insert(i, "+5")
+            a = a.Insert(i, "+4")
         End If
         i = a.IndexOf(",", i) + 1
         i = a.IndexOf(",", i) + 1
