@@ -1376,6 +1376,7 @@ commacase:
     End Function
 
     Function Handlemovmonx(a As String) As String
+        Return a   'Edited to fix an issue where it was multiplying twice due to the lsp command
         Dim i As Integer = a.IndexOf(",")
         Dim indexchar As String
         Console.WriteLine(GetChar(a, i))
@@ -1396,6 +1397,7 @@ commacase:
     End Function
 
     Function handlemovmony(a As String) As String
+        Return a   'Edited to fix an issue where it was multiplying twice due to the lsp command
         Dim i As Integer = a.IndexOf(",")
         Dim indexchar As String
         Console.WriteLine(GetChar(a, i))
