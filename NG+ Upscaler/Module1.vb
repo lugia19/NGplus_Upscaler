@@ -41,6 +41,8 @@ Module Module1
             Console.Clear()
             Console.WriteLine("This installer requires that you have both the remaster installed (with the sidestoryupscaler) and have either a")
             Console.WriteLine("build of NG+ or a previous install (saves made in the normal NG+ will work MOSTLY fine)")
+            Console.WriteLine("Waifu2x (which is used to upscale the images) requires the Microsoft Visual C++ 2015 Redistributable Update 3")
+            Console.WriteLine("If you don't have it installed (or if you don't know) just run the vc.exe file that's in the mod folder.")
             Console.WriteLine("To use this installer you either:")
             Console.WriteLine("1) Need the following folder structure:")
             Console.WriteLine(">Parent directory")
