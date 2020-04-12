@@ -48,6 +48,7 @@ Module Module1
             Console.WriteLine(">Parent directory")
             Console.WriteLine("     >NG+ directory (full install or just the EXTRACTED .zip file of a build)")
             Console.WriteLine("     >Directory where the Remaster is installed")
+            Console.WriteLine("     >NG+ upscaler.exe")
             Console.WriteLine("This file must be placed inside the parent directory.")
             Console.WriteLine()
             Console.WriteLine("2) Input the ABSOLUTE path (aka the full path) to the Remaster's folder, NG+'s folder and where you want the new ""Shared resources"" folder to be. ")
@@ -61,7 +62,9 @@ Module Module1
             Try
                 AbsPath = Console.ReadLine()
             Catch ex As Exception
-
+                Console.WriteLine(ex.Message)
+                Console.WriteLine("Press enter to retry")
+                Console.ReadLine()
             End Try
         Loop
         AbsPath = AbsPath - 1
@@ -535,7 +538,7 @@ Module Module1
             Do
                 a = reader.ReadLine
 
-                If a = ";l19-Upscaled" Then
+                If a = ";l19-upscaled" Then
                     Console.WriteLine("The file has already been processed.")
                     'Console.ReadLine()
                     Exit Do
