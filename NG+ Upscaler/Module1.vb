@@ -14,7 +14,7 @@ Module Module1
     Dim ParentDir As String = Environment.CurrentDirectory
     Dim SharedDir As String = ParentDir & "\SharedFiles"
     Dim scalefraction As String
-    Dim ScaleFactor As Double
+    Dim ScaleFactor As String
     Dim mode As String
     Dim choice As String
     Dim ShouldMerge As Boolean
@@ -52,7 +52,7 @@ Module Module1
             Console.WriteLine("This file must be placed inside the parent directory.")
             Console.WriteLine()
             Console.WriteLine("2) Input the ABSOLUTE path (aka the full path) to the Remaster's folder, NG+'s folder and where you want the new ""Shared resources"" folder to be. ")
-            Console.WriteLine("I would HIGHLY RECOMMEND THAT ALL THESE FOLDERS BE SEPARATE AND NOT INSIDE EACHOTHER.")
+            Console.WriteLine("ALL THESE FOLDERS MUST BE SEPARATE AND NOT INSIDE EACHOTHER.")
             Console.WriteLine()
             Console.WriteLine("Please note that moving any of these folders will break the installation and will require running this tool again.")
             Console.WriteLine("It is also possible to update your install of NG+ with a newer build - simply apply the patch and run this tool again.")
@@ -140,12 +140,12 @@ Module Module1
             Console.WriteLine("2) 720p")
             choice = Console.ReadLine()
             If choice = "1" Then
-                ScaleFactor = 1.8
+                ScaleFactor = "1.8"
                 scalefraction = "*18/10"
                 Console.Clear()
                 Exit Do
             ElseIf choice = "2" Then
-                ScaleFactor = 1.2
+                ScaleFactor = "1.2"
                 scalefraction = "*12/10"
                 Console.Clear()
                 Exit Do
@@ -160,9 +160,20 @@ Module Module1
         End If
 
         If Not (Directory.Exists(RemasterDir & "\mod\pngquant")) Then
-            My.Computer.Network.DownloadFile("https://pngquant.org/pngquant-windows.zip", RemasterDir & "\pngquant-windows.zip")
+
+            Try
+                My.Computer.Network.DownloadFile("https://pngquant.org/pngquant-windows.zip", RemasterDir & "\pngquant-windows.zip")
+            Catch ex As Exception
+                Console.WriteLine(ex.Message)
+                Console.WriteLine("Please run this with internet access at least the first time - it needs to download the compression software used to save space.")
+                File.Delete(RemasterDir & "\pngquant-windows.zip")
+                Console.ReadLine()
+                Return
+            End Try
+
             Directory.CreateDirectory(RemasterDir & "\mod\pngquant")
             ZipFile.ExtractToDirectory(RemasterDir & "\pngquant-windows.zip", RemasterDir & "\mod\")
+            File.Delete(RemasterDir & "\pngquant-windows.zip")
         End If
 
 
@@ -548,7 +559,7 @@ Module Module1
 
                 If Not bodge2 Then
                     If a.Contains("S800,600") Then           'Special case for the resolution setting
-                        If ScaleFactor = 1.8 Then
+                        If ScaleFactor = "1.8" Then
                             a = a.Replace("S800", "S1440")
                             a = a.Replace("600L", "1080L")
                         Else
