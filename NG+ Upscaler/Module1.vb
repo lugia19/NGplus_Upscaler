@@ -542,19 +542,31 @@ Module Module1
             End If
 
             Dim reader As StreamReader = New StreamReader(NGDir & "\txtbackups\" & CurrentFile & ".txt", System.Text.Encoding.Default)
-            Dim writer As StreamWriter = My.Computer.FileSystem.OpenTextFileWriter(NGDir & "\" & CurrentFile & ".txt", False, Encoding.Default)
-            writer.AutoFlush = True
+
+
             Dim a As String
             Dim bodge2 As Boolean = False
-            Do
-                a = reader.ReadLine
 
+            For i = 0 To 30         'Checks like the first 30 lines for the upscaled flag (Just to be safe).
+                a = reader.ReadLine
                 If a = ";l19-upscaled" Then
                     Console.WriteLine("The file has already been processed.")
                     'Console.ReadLine()
-                    Exit Do
+                    reader.Close()
+                    Console.WriteLine("File end.")
+                    File.Copy(NGDir & "\txtbackups\" & CurrentFile & ".txt", NGDir & "\" & CurrentFile & ".txt", True)
+                    CurrentFile = CurrentFile + 1
+                    Console.ReadLine()
+                    Continue Do
                 End If
+            Next
 
+            reader = New StreamReader(NGDir & "\txtbackups\" & CurrentFile & ".txt", System.Text.Encoding.Default)
+
+            Dim writer As StreamWriter = My.Computer.FileSystem.OpenTextFileWriter(NGDir & "\" & CurrentFile & ".txt", False, Encoding.Default)
+            writer.AutoFlush = True
+            Do
+                a = reader.ReadLine
 
 
                 If Not bodge2 Then
