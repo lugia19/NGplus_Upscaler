@@ -12,10 +12,11 @@ Module Module1
     Dim NGDir As String
     Dim RemasterDir As String
     Dim ParentDir As String = Environment.CurrentDirectory
-    Dim SharedDir As String = ParentDir & "\SharedFiles"
     Dim scalefraction As String
     Dim ScaleFactor As String
+    Dim previnstall As String
     Dim mode As String
+    Dim shareddir As String
     Dim choice As String
     Dim ShouldMerge As Boolean
     Dim ListOfMerges As List(Of String) = {"tamamo_st21", "gnome_st33r",
@@ -39,11 +40,16 @@ Module Module1
         Dim AbsPath As Integer = 0
         Do While AbsPath <> 1 And AbsPath <> 2
             Console.Clear()
-            Console.WriteLine("This installer requires that you have both the remaster installed (with the sidestoryupscaler) and have either a")
-            Console.WriteLine("build of NG+ or a previous install (saves made in the normal NG+ will work MOSTLY fine)")
-            Console.WriteLine("Waifu2x (which is used to upscale the images) requires the Microsoft Visual C++ 2015 Redistributable Update 3")
+            Console.WriteLine("This installer requires that you have both the remaster installed (with the sidestoryupscaler) and have either a build of NG+ or a previous install (saves made in the normal NG+ will work MOSTLY fine)")
+            Console.WriteLine("")
+            Console.WriteLine("Waifu2x (which is used to upscale the images) requires the Microsoft Visual C++ 2015 Redistributable Update 3.")
             Console.WriteLine("If you don't have it installed (or if you don't know) just run the vc.exe file that's in the mod folder.")
+            Console.WriteLine("")
+            Console.WriteLine("Press enter to continue.")
+            Console.ReadLine()
+            Console.Clear()
             Console.WriteLine("To use this installer you either:")
+            Console.WriteLine("")
             Console.WriteLine("1) Need the following folder structure:")
             Console.WriteLine(">Parent directory")
             Console.WriteLine("     >NG+ directory (full install or just the EXTRACTED .zip file of a build)")
@@ -51,12 +57,11 @@ Module Module1
             Console.WriteLine("     >NG+ upscaler.exe")
             Console.WriteLine("This file must be placed inside the parent directory.")
             Console.WriteLine()
-            Console.WriteLine("2) Input the ABSOLUTE path (aka the full path) to the Remaster's folder, NG+'s folder and where you want the new ""Shared resources"" folder to be. ")
-            Console.WriteLine("ALL THESE FOLDERS MUST BE SEPARATE AND NOT INSIDE EACHOTHER.")
+            Console.WriteLine("2) Input the ABSOLUTE path (aka the full path) to the Remaster and NG+'s folders")
+            Console.WriteLine("THESE TWO FOLDERS MUST BE SEPARATE AND NOT INSIDE EACHOTHER.")
             Console.WriteLine()
-            Console.WriteLine("Please note that moving any of these folders will break the installation and will require running this tool again.")
+            Console.WriteLine("Please note that moving either of these folders will break the installation and will require running this tool again.")
             Console.WriteLine("It is also possible to update your install of NG+ with a newer build - simply apply the patch and run this tool again.")
-            Console.WriteLine("If you are updating the install and using the absolute path, please note that the shared resources directory must be the same as the original one you created when first running this tool.")
             Console.WriteLine()
             Console.WriteLine("Please input your choice")
             Try
@@ -106,16 +111,6 @@ Module Module1
 
         Loop While Not Directory.Exists(RemasterDir) Or Not File.Exists(RemasterDir & "\Monster Girl Quest Remastered.exe")
 
-        If AbsPath Then
-            Do
-                Console.Clear()
-                Console.WriteLine("Please input the path where the Shared Resources folder will be:")
-                SharedDir = Console.ReadLine().Replace("""", "")
-                If SharedDir <> "" Then
-                    Exit Do
-                End If
-            Loop
-        End If
 
         Do
             Console.WriteLine("Use GPU acceleration? (Note: Requires an Nvidia GPU and CUDA, run cuda.exe to install it if you haven't already, it's in the mod folder of the remaster)")
@@ -153,6 +148,8 @@ Module Module1
             Console.Clear()
         Loop
 
+
+
         If Not (File.Exists(RemasterDir & "\mod\SideStoryUpscaler.exe")) Then
             Console.WriteLine("THIS PROGRAM REQUIRES THAT YOU HAVE THE SIDESTORYUPSCALER INSTALLED.")
             Console.WriteLine("PLEASE DOWNLOAD IT FROM THE UPDATES LINK IN THE PASTEBIN AND INSTALL IT IN THE CORRECT LOCATION.")
@@ -176,28 +173,54 @@ Module Module1
             File.Delete(RemasterDir & "\pngquant-windows.zip")
         End If
 
+        Do
+            Console.Clear()
+            Console.WriteLine("Do you have a previous installation of NG+/the remaster that includes a ""SharedFiles"" folder?")
+            Console.WriteLine("(This means you ran a previous version of this tool, if this is the first time just answer no)")
+            Console.WriteLine("1) Yes")
+            Console.WriteLine("2) No")
+            previnstall = Console.ReadLine()
+        Loop While Not previnstall = "2" And Not previnstall = "1"
 
+        If previnstall = 1 Then
+            'User has picked Yes.
 
-        If Not (Directory.Exists(SharedDir & "\bg")) Then
-            Directory.CreateDirectory(SharedDir)
-            My.Computer.FileSystem.MoveDirectory(RemasterDir & "\bg", SharedDir & "\bg")
-            My.Computer.FileSystem.MoveDirectory(RemasterDir & "\chara", SharedDir & "\chara")
-            My.Computer.FileSystem.MoveDirectory(RemasterDir & "\effect", SharedDir & "\effect")
-            My.Computer.FileSystem.MoveDirectory(RemasterDir & "\ency", SharedDir & "\ency")
-            My.Computer.FileSystem.MoveDirectory(RemasterDir & "\se", SharedDir & "\se")
-            My.Computer.FileSystem.MoveDirectory(RemasterDir & "\system", SharedDir & "\system")
+            Do
+                Console.Clear()
+                Console.WriteLine("Please input the path to the ""SharedFiles"" folder.")
+                shareddir = Console.ReadLine().Replace("""", "")
+            Loop While Not Directory.Exists(shareddir)
+
+            'We're here and we know we have the correct shareddir folder.
+            'Time to copy everything to the NG+/Remaster directories.
+            Dim y As New List(Of String)
+            y.Add("bg")
+            y.Add("chara")
+            y.Add("effect")
+            y.Add("ency")
+            y.Add("se")
+            y.Add("system")
+
+            For Each subdir In y
+                Try
+                    Directory.Delete(RemasterDir & "\" & subdir)        'If it's a junction delete it. This is possible because junctions appear as empty folders.
+                    Directory.Delete(NGDir & "\" & subdir)
+                Catch ex As Exception
+
+                End Try
+                My.Computer.FileSystem.MoveDirectory(shareddir & "\" & subdir, RemasterDir & "\" & subdir, True)
+            Next
+            Directory.Delete(shareddir)
+            'Done moving.
         End If
-        'We have established where NG+ and the remaster are installed. Let's start moving the folders.
-        'Now we have all the dirs moved. Junctions time.
-        MakeLink(SharedDir & "\bg", RemasterDir & "\bg")
-        MakeLink(SharedDir & "\chara", RemasterDir & "\chara")
-        MakeLink(SharedDir & "\effect", RemasterDir & "\effect")
-        MakeLink(SharedDir & "\ency", RemasterDir & "\ency")
-        MakeLink(SharedDir & "\se", RemasterDir & "\se")
-        MakeLink(SharedDir & "\system", RemasterDir & "\system")
 
-        MakeLink(SharedDir & "\bg", NGDir & "\bg")
-        MakeLink(SharedDir & "\chara", NGDir & "\chara")
+
+        'We have established where NG+ and the remaster are installed. Let's start moving the folders.
+        'We're leaving the directories in the remaster folder and simply linking NG+ to them.
+
+        'No need to delete these ones beforehand as they don't normally exist
+        MakeLink(RemasterDir & "\bg", NGDir & "\bg")
+        MakeLink(RemasterDir & "\chara", NGDir & "\chara")
 
 
 
@@ -210,7 +233,7 @@ Module Module1
             CreateObject("Scripting.FileSystemObject").DeleteFolder(NGDir & "\effect")
         End Try
 
-        MakeLink(SharedDir & "\effect", NGDir & "\effect")
+        MakeLink(RemasterDir & "\effect", NGDir & "\effect")
 
         Try
             If Directory.Exists(NGDir & "\ency") Then
@@ -221,7 +244,7 @@ Module Module1
             CreateObject("Scripting.FileSystemObject").DeleteFolder(NGDir & "\ency")
         End Try
 
-        MakeLink(SharedDir & "\ency", NGDir & "\ency")
+        MakeLink(RemasterDir & "\ency", NGDir & "\ency")
 
         Try
             If Directory.Exists(NGDir & "\se") Then
@@ -231,7 +254,7 @@ Module Module1
         Catch ex As Exception
             CreateObject("Scripting.FileSystemObject").DeleteFolder(NGDir & "\se")
         End Try
-        MakeLink(SharedDir & "\se", NGDir & "\se")
+        MakeLink(RemasterDir & "\se", NGDir & "\se")
 
         Try
             If Directory.Exists(NGDir & "\system") Then
@@ -242,10 +265,10 @@ Module Module1
             CreateObject("Scripting.FileSystemObject").DeleteFolder(NGDir & "\system")
         End Try
 
-        MakeLink(SharedDir & "\system", NGDir & "\system")
+        MakeLink(RemasterDir & "\system", NGDir & "\system")
 
 
-        'Now the remaster is back where it was, only with junctions. Time to copy the miscellaneous files.
+        'Time to copy the miscellaneous files.
         File.Copy(RemasterDir & "\arc.nsa", NGDir & "\arc.nsa", True)
         File.Copy(RemasterDir & "\arc1.nsa", NGDir & "\arc1.nsa", True)
         File.Copy(RemasterDir & "\arc2.nsa", NGDir & "\arc2.nsa", True)
@@ -556,7 +579,7 @@ Module Module1
                     Console.WriteLine("File end.")
                     File.Copy(NGDir & "\txtbackups\" & CurrentFile & ".txt", NGDir & "\" & CurrentFile & ".txt", True)
                     CurrentFile = CurrentFile + 1
-                    Console.ReadLine()
+                    'Console.ReadLine()
                     Continue Do
                 End If
             Next
