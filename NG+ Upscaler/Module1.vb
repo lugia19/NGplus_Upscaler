@@ -45,6 +45,7 @@ Module Module1
             Console.WriteLine("Waifu2x (which is used to upscale the images) requires the Microsoft Visual C++ 2015 Redistributable Update 3.")
             Console.WriteLine("If you don't have it installed (or if you don't know) just run the vc.exe file that's in the mod folder.")
             Console.WriteLine("")
+            Console.WriteLine("There's also a video tutorial linked in the readme. It starts from just the NG+ .zip file and the remaster.")
             Console.WriteLine("Press enter to continue.")
             Console.ReadLine()
             Console.Clear()
